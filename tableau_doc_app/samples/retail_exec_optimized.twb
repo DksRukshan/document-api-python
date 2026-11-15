@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2024.2.0 (20242.24.0613.1930)' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <preferences>
+    <preference name='ui.show-tabs' value='false' />
+  </preferences>
+  <style>
+    <style-rule element='all'>
+      <format attr='font-family' value='Tableau Book' />
+    </style-rule>
+    <style-rule element='gridline'>
+      <format attr='gridline-style' value='none' />
+    </style-rule>
+  </style>
+  <datasources>
+    <datasource caption='Orders Curated Extract' inline='true' name='federated.orders_extract' version='18.1'>
+      <connection class='hyper' />
+      <extract enabled='true' aggregate-rollup='true'>
+        <filter class='quantitative' column='[Order Date]' />
+      </extract>
+      <relationships>
+        <relationship type='left' />
+      </relationships>
+      <objects>
+        <object caption='Orders' id='orders_obj' />
+        <object caption='Returns' id='returns_obj' />
+      </objects>
+      <column caption='Region Tier' datatype='string' name='[Calculation_RegionTier]' role='dimension'>
+        <calculation class='tableau' formula='CASE [Region] WHEN &quot;West&quot; THEN &quot;Tier 1&quot; WHEN &quot;East&quot; THEN &quot;Tier 2&quot; ELSE &quot;Other&quot; END' />
+      </column>
+      <column caption='Core Segments' datatype='boolean' name='[Calculation_CoreSeg]' role='dimension'>
+        <calculation class='tableau' formula='[Segment] IN (&quot;Consumer&quot;, &quot;Corporate&quot;, &quot;Home Office&quot;)' />
+      </column>
+      <column caption='Selected Metric' datatype='real' name='[Calculation_Metric]' role='measure'>
+        <calculation class='tableau' formula='CASE [Metric Param] WHEN 1 THEN SUM([Sales]) WHEN 2 THEN SUM([Profit]) ELSE SUM([Quantity]) END' />
+      </column>
+      <column caption='Order Date' datatype='date' name='[Order Date]' role='dimension' />
+      <column caption='Sales' datatype='real' name='[Sales]' role='measure' />
+      <column caption='Legacy Raw Id' datatype='string' hidden='true' name='[Legacy Raw Id]' role='dimension' />
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name='Regional Revenue Overview'>
+      <layout-options>
+        <title visible='true'>Regional Revenue and Profit Margin Overview</title>
+        <caption visible='true'>Shows current rolling 24 months from curated Hyper extract.</caption>
+      </layout-options>
+      <table>
+        <view>
+          <datasources><datasource caption='Orders Curated Extract' name='federated.orders_extract' /></datasources>
+          <filter class='categorical' column='[federated.orders_extract].[Order Date]' context='true' />
+          <panes>
+            <pane>
+              <mark class='Bar' />
+              <customized-tooltip show-command-buttons='false'>In &lt;Region&gt;, revenue reached &lt;SUM(Sales)&gt;.</customized-tooltip>
+            </pane>
+          </panes>
+          <rows>[federated.orders_extract].[Calculation_RegionTier]</rows>
+          <cols>[federated.orders_extract].[Calculation_Metric]</cols>
+        </view>
+        <style>
+          <style-rule element='measure'><format attr='number-format' value='▲ +0.0%;▼ -0.0%;— 0.0%' /></style-rule>
+        </style>
+      </table>
+    </worksheet>
+    <worksheet name='Monthly Performance Trend'>
+      <layout-options>
+        <title visible='true'>Monthly Trend for Core Segments</title>
+        <caption visible='true'>Excludes minor segments via precomputed Boolean dimension filter.</caption>
+      </layout-options>
+      <table>
+        <view>
+          <datasources><datasource caption='Orders Curated Extract' name='federated.orders_extract' /></datasources>
+          <filter class='categorical' column='[federated.orders_extract].[Calculation_CoreSeg]' />
+          <panes>
+            <pane>
+              <mark class='Line' />
+              <customized-tooltip show-command-buttons='false'>Month &lt;Order Date&gt;: &lt;SUM(Sales)&gt;</customized-tooltip>
+            </pane>
+          </panes>
+          <rows>[federated.orders_extract].[Calculation_Metric]</rows>
+          <cols>[federated.orders_extract].[Order Date]</cols>
+        </view>
+      </table>
+    </worksheet>
+  </worksheets>
+  <dashboards>
+    <dashboard name='Executive Performance Brief'>
+      <size sizing-mode='fixed' maxwidth='1440' maxheight='900' />
+      <zones>
+        <zone type-v2='layout-flow'>
+          <zone name='Regional Revenue Overview' />
+          <zone name='Monthly Performance Trend' />
+          <zone type-v2='filter' param='Order Date' mode='range' />
+          <zone type-v2='toggle-zone' toggle-zone='filters_drawer' />
+        </zone>
+      </zones>
+      <actions>
+        <action name='Drill Region' on-exit='exclude' />
+      </actions>
+    </dashboard>
+  </dashboards>
+  <windows>
+    <window class='dashboard' name='Executive Performance Brief' tabs='false' />
+  </windows>
+</workbook>

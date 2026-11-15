@@ -75,3 +75,10 @@ tasks.json
 
 #Jekyll
 docs/_site
+
+# Tableau AI Documenter App
+.venv/
+.env
+outputs/
+.pytest_cache/
+

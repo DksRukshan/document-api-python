@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tableau AI Documenter &amp; Performance Auditor — Google Antigravity SDK</title>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --surface: #ffffff;
+    --surface-2: #eef2f7;
+    --text: #0f172a;
+    --muted: #475569;
+    --border: #dbe3ee;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-soft: #dbeafe;
+    --ok: #059669;
+    --ok-soft: #d1fae5;
+    --warn: #d97706;
+    --warn-soft: #fef3c7;
+    --err: #dc2626;
+    --err-soft: #fee2e2;
+    --crit: #991b1b;
+    --crit-soft: #fecaca;
+    --code-bg: #0f172a;
+    --code-fg: #e2e8f0;
+  }
+  [data-theme="dark"] {
+    --bg: #0b1120;
+    --surface: #111827;
+    --surface-2: #1e293b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: #334155;
+    --accent: #60a5fa;
+    --accent-hover: #3b82f6;
+    --accent-soft: #1e3a8a;
+    --ok: #34d399;
+    --ok-soft: #064e3b;
+    --warn: #fbbf24;
+    --warn-soft: #78350f;
+    --err: #f87171;
+    --err-soft: #7f1d1d;
+    --crit: #fca5a5;
+    --crit-soft: #450a0a;
+    --code-bg: #020617;
+    --code-fg: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  a { color: var(--accent); }
+  header.topbar {
+    position: sticky; top: 0; z-index: 30;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px; display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .brand { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .brand h1 { margin: 0; font-size: 1.12rem; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600;
+    background: var(--surface-2); color: var(--muted); border: 1px solid transparent;
+  }
+  .pill-ok { background: var(--ok-soft); color: var(--ok); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-err { background: var(--err-soft); color: var(--err); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent); }
+  .container { max-width: 1360px; margin: 0 auto; padding: 18px 24px 64px; display: flex; flex-direction: column; gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .card h2 { margin: 0 0 12px; font-size: 1.06rem; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .dropzone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 22px 16px;
+    text-align: center; background: var(--bg); cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .dropzone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 170px; margin-bottom: 10px; }
+  label { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+  input[type="text"], input[type="password"], input[type="search"], select, textarea {
+    width: 100%; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-size: 0.88rem; font-family: inherit;
+  }
+  textarea { min-height: 58px; resize: vertical; }
+  button {
+    cursor: pointer; border-radius: 8px; padding: 7px 13px; font-size: 0.86rem;
+    font-weight: 600; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+  button.secondary-accent { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  button.chip-btn { padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; }
+  button.chip-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 10px; }
+  .stat-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .stat-val { font-size: 1.2rem; font-weight: 700; color: var(--accent); display: block; }
+  .stat-lbl { font-size: 0.76rem; color: var(--muted); }
+  .score-hero { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-bottom: 12px; }
+  .score-ring {
+    width: 82px; height: 82px; border-radius: 50%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; border: 5px solid var(--accent); background: var(--bg);
+    flex-shrink: 0;
+  }
+  .score-ring .num { font-size: 1.45rem; font-weight: 800; line-height: 1.1; }
+  .score-ring .grd { font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+  .grade-A, .grade-B { border-color: var(--ok); color: var(--ok); }
+  .grade-C { border-color: var(--warn); color: var(--warn); }
+  .grade-D, .grade-F { border-color: var(--err); color: var(--err); }
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px; flex: 1; }
+  .cat-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 11px; cursor: pointer; text-align: left;
+  }
+  .cat-card:hover { border-color: var(--accent); }
+  .cat-card .cat-top { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; }
+  .cat-bar { height: 5px; background: var(--surface-2); border-radius: 999px; overflow: hidden; margin: 6px 0 4px; }
+  .cat-bar > span { display: block; height: 100%; background: var(--accent); }
+  .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.86rem; margin: 8px 0; border: 1px solid transparent; }
+  .alert-warn { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
+  .alert-err { background: var(--err-soft); color: var(--err); border-color: var(--err); }
+  .alert-ok { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px; }
+  .tab-btn { background: transparent; border-color: transparent; color: var(--muted); }
+  .tab-btn.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .hidden { display: none !important; }
+  .agent-log {
+    max-height: 280px; overflow-y: auto; background: var(--code-bg); color: var(--code-fg);
+    border-radius: 8px; padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8rem;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .log-entry { padding: 4px 8px; border-radius: 4px; border-left: 3px solid #64748b; white-space: pre-wrap; word-break: break-word; }
+  .log-thought { border-left-color: #a78bfa; color: #ddd6fe; }
+  .log-tool_call, .log-tool_start { border-left-color: #38bdf8; color: #bae6fd; }
+  .log-tool_result, .log-tool_end { border-left-color: #34d399; color: #a7f3d0; }
+  .log-status { border-left-color: #93c5fd; color: #dbeafe; }
+  .log-error { border-left-color: #f87171; color: #fecaca; }
+  .log-complete { border-left-color: #22c55e; color: #bbf7d0; font-weight: 700; }
+  .subcard { border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; margin: 10px 0; background: var(--bg); }
+  .subcard h3 { margin: 0 0 6px; font-size: 0.98rem; }
+  .finding-card { border: 1px solid var(--border); border-left-width: 4px; border-radius: 10px; padding: 12px 14px; margin: 10px 0; background: var(--bg); }
+  .sev-critical { border-left-color: var(--crit); }
+  .sev-high { border-left-color: var(--err); }
+  .sev-medium { border-left-color: var(--warn); }
+  .sev-low, .sev-info { border-left-color: var(--accent); }
+  .diff-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 8px; }
+  .diff-before { background: var(--err-soft); border: 1px solid var(--err); border-radius: 8px; padding: 8px 10px; overflow-x: auto; }
+  .diff-after { background: var(--ok-soft); border: 1px solid var(--ok); border-radius: 8px; padding: 8px 10px; overflow-x: auto; }
+  .diff-before pre, .diff-after pre { margin: 4px 0 0; white-space: pre-wrap; word-break: break-word; font-size: 0.8rem; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--surface-2); font-weight: 600; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+  pre.code-block { background: var(--code-bg); color: var(--code-fg); padding: 10px 12px; border-radius: 8px; overflow-x: auto; }
+  .wireframe-box { position: relative; width: 100%; background: var(--surface); border: 1px dashed var(--border); border-radius: 8px; margin-top: 8px; overflow: hidden; }
+  .wf-zone { position: absolute; border: 1.5px solid #2563eb; background: rgba(37,99,235,0.1); border-radius: 4px; padding: 2px 5px; font-size: 0.7rem; overflow: hidden; }
+  .thumb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .thumb-card { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--bg); }
+  .thumb-card img { width: 100%; height: auto; display: block; }
+  .thumb-cap { padding: 6px 10px; font-size: 0.8rem; display: flex; justify-content: space-between; }
+  iframe.preview-frame { width: 100%; height: 680px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+  .chat-box { display: flex; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; }
+  .chat-msg { padding: 10px 13px; border-radius: 10px; max-width: 88%; white-space: pre-wrap; font-size: 0.9rem; }
+  .chat-user { align-self: flex-end; background: var(--accent); color: #fff; }
+  .chat-assistant { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); }
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; max-width: 480px; width: 100%; padding: 20px; }
+  .muted { color: var(--muted); font-size: 0.84rem; }
+  @media (max-width: 960px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .container { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <h1>Tableau AI Documenter &amp; Auditor</h1>
+    <span class="pill pill-accent">Google Antigravity SDK</span>
+    <span class="pill">Docs + Perf/WCAG Audit + Coach</span>
+  </div>
+  <div class="row">
+    <span id="credPill" class="pill">Checking credentials...</span>
+    <button type="button" onclick="openKeyModal()">API Key</button>
+    <button type="button" onclick="toggleTheme()">Theme</button>
+  </div>
+</header>
+
+<main class="container">
+  <div class="grid-2">
+    <!-- Left Card: Workbook Input & Showcase Samples -->
+    <section class="card">
+      <h2>1. Load Tableau Workbook (.twb / .twbx)</h2>
+      <div id="dropzone" class="dropzone" onclick="document.getElementById('fileInput').click()">
+        <strong>Drop a <code>.twb</code> or <code>.twbx</code> file here</strong> or click to browse
+        <div class="muted" id="selectedFileLabel">Runs deterministic metadata extraction + 7-category Perf/UX Health Audit immediately</div>
+        <input id="fileInput" type="file" accept=".twb,.twbx" class="hidden" onchange="handleFileSelect(this.files[0])" />
+      </div>
+      <div style="margin-top: 10px;">
+        <div class="muted" style="margin-bottom: 6px;">Quick Showcase Samples:</div>
+        <div id="showcaseRow" class="row" style="margin-bottom: 10px;"></div>
+        <div class="row">
+          <select id="sampleSelect" style="flex:1;"></select>
+          <button type="button" onclick="loadSampleWorkbook()">Load Sample</button>
+        </div>
+      </div>
+      <div id="inspectAlert" class="hidden"></div>
+    </section>
+
+    <!-- Right Card: Antigravity SDK Controls & Actions -->
+    <section class="card">
+      <h2>2. Antigravity SDK Pipeline &amp; Exports</h2>
+      <div id="credGuide" class="alert alert-warn hidden">
+        No server-side <code>GEMINI_API_KEY</code> detected. Get a free key at
+        <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">Google AI Studio</a>
+        and click <a href="#" onclick="openKeyModal(); return false;">Configure API Key</a> (or use Deterministic Audit &amp; Docs right away).
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="dashboardScope">Target Scope (Docs)</label>
+          <select id="dashboardScope">
+            <option value="">Entire Workbook (All Dashboards)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="audienceInput">Target Audience</label>
+          <input id="audienceInput" type="text" value="Business &amp; Technical Stakeholders" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="backendSelect">Antigravity Backend</label>
+          <select id="backendSelect" onchange="updateBackendFields()">
+            <option value="gemini">Gemini API (Google AI Studio)</option>
+            <option value="vertex">Vertex AI (ADC / Express)</option>
+            <option value="ollama">Local OpenAI / Ollama</option>
+            <option value="litert">LiteRT-LM On-Device</option>
+          </select>
+        </div>
+        <div class="field" id="apiKeyField">
+          <label for="apiKeyInput">Session API Key Override (optional)</label>
+          <input id="apiKeyInput" type="password" placeholder="AIza... (or use API Key button)" autocomplete="off" />
+        </div>
+        <div class="field hidden" id="vertexProjectField">
+          <label for="projectInput">GCP Project (optional if ADC/env)</label>
+          <input id="projectInput" type="text" placeholder="my-gcp-project" />
+        </div>
+        <div class="field hidden" id="ollamaUrlField">
+          <label for="baseUrlInput">Local Server Base URL</label>
+          <input id="baseUrlInput" type="text" value="http://localhost:11434/v1" />
+        </div>
+        <div class="field hidden" id="litertPathField">
+          <label for="litertPathInput">LiteRT Model Path (.litertlm)</label>
+          <input id="litertPathInput" type="text" placeholder="/path/to/model.litertlm" />
+        </div>
+        <div class="field">
+          <label for="modelInput">Model Override (blank = SDK default)</label>
+          <input id="modelInput" type="text" placeholder="SDK Default" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="customInstructions">Focus Notes / Custom Instructions (Docs &amp; Audit)</label>
+        <textarea id="customInstructions" placeholder="E.g. Rewrite slow IF/CONTAINS KPIs, audit WCAG contrast, summarize executive metrics..."></textarea>
+      </div>
+
+      <div class="row" style="justify-content: space-between; margin-bottom: 10px;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input id="includeThumbs" type="checkbox" checked /> Attach PNG thumbnails (vision)
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input id="deepMultiAgent" type="checkbox" /> Deep Multi-Agent Audit (Calcs + UX subagents)
+        </label>
+      </div>
+
+      <div class="row" style="justify-content: space-between;">
+        <div class="row">
+          <button id="generateBtn" type="button" class="primary" disabled onclick="startAiGeneration()">
+            Generate AI Docs
+          </button>
+          <button id="auditBtn" type="button" class="secondary-accent" disabled onclick="startAiAudit()">
+            Run AI Perf &amp; UX Audit
+          </button>
+        </div>
+        <div class="row">
+          <button id="expMdBtn" type="button" disabled onclick="downloadSessionExport('md')">Export .md</button>
+          <button id="expHtmlBtn" type="button" disabled onclick="downloadSessionExport('html')">.html</button>
+          <button id="expJsonBtn" type="button" disabled onclick="downloadSessionExport('json')">.json</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Workbook Health Scorecard & Metadata Summary -->
+  <section id="summarySection" class="card hidden">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px;">
+      <div>
+        <strong id="wbTitle" style="font-size:1.12rem;">Workbook</strong>
+        <span id="wbMeta" class="muted" style="margin-left:8px;"></span>
+      </div>
+      <div id="perfRecBadge" class="hidden"></div>
+    </div>
+
+    <div class="score-hero">
+      <div id="scoreRing" class="score-ring">
+        <span class="num" id="scoreVal">--</span>
+        <span class="grd" id="gradeVal">Grade -</span>
+      </div>
+      <div id="categoryGrid" class="cat-grid"></div>
+    </div>
+
+    <div id="statsBar" class="stats-bar"></div>
+  </section>
+
+  <!-- Live Antigravity SDK Execution Trace -->
+  <section id="agentSection" class="card hidden">
+    <h2>
+      <span id="agentTitle">Antigravity SDK Agent Activity</span>
+      <span class="row">
+        <span id="jobStatusPill" class="pill pill-accent">Running...</span>
+        <button type="button" onclick="document.getElementById('agentLog').innerHTML=''">Clear Log</button>
+      </span>
+    </h2>
+    <div id="agentErrorBox" class="alert alert-err hidden"></div>
+    <div id="agentLog" class="agent-log"></div>
+  </section>
+
+  <!-- Main Unified Workspace Tabs -->
+  <section id="workspaceSection" class="card hidden">
+    <div class="tabs">
+      <button type="button" class="tab-btn active" data-tab="findings" onclick="switchTab('findings')">Audit Findings (<span id="findingCountTab">0</span>)</button>
+      <button type="button" class="tab-btn" data-tab="explorer" onclick="switchTab('explorer')">Workbook &amp; Wireframes</button>
+      <button type="button" class="tab-btn" data-tab="aiAudit" onclick="switchTab('aiAudit')">AI Perf &amp; UX Playbook</button>
+      <button type="button" class="tab-btn" data-tab="aiReport" onclick="switchTab('aiReport')">AI Documentation</button>
+      <button type="button" class="tab-btn" data-tab="htmlPreview" onclick="switchTab('htmlPreview')">Standalone HTML</button>
+      <button type="button" class="tab-btn" data-tab="markdownRaw" onclick="switchTab('markdownRaw')">Markdown</button>
+      <button type="button" class="tab-btn" data-tab="coach" onclick="switchTab('coach')">Coach Chat</button>
+      <input id="workspaceSearch" type="search" placeholder="Filter findings, fields, sheets..." style="max-width:240px;margin-left:auto;" oninput="renderActiveFilters()" />
+    </div>
+
+    <div id="tab-findings"></div>
+    <div id="tab-explorer" class="hidden"></div>
+    <div id="tab-aiAudit" class="hidden"></div>
+    <div id="tab-aiReport" class="hidden"></div>
+    <div id="tab-htmlPreview" class="hidden">
+      <div class="row" style="margin-bottom:10px;justify-content:space-between;">
+        <span class="muted">Self-contained HTML documentation &amp; health scorecard artifact (dark mode &amp; print/PDF ready).</span>
+        <button type="button" onclick="refreshHtmlPreview()">Refresh Preview</button>
+      </div>
+      <iframe id="htmlIframe" class="preview-frame" title="HTML Documentation Preview"></iframe>
+    </div>
+    <div id="tab-markdownRaw" class="hidden">
+      <div class="row" style="margin-bottom:8px;justify-content:space-between;">
+        <span class="muted">Combined Markdown export (updates automatically as AI Docs &amp; AI Audit complete).</span>
+        <button type="button" onclick="copyMarkdown()">Copy Markdown</button>
+      </div>
+      <pre id="markdownSourcePre" class="code-block" style="max-height:640px;"></pre>
+    </div>
+    <div id="tab-coach" class="hidden">
+      <div class="row" style="margin-bottom:10px;">
+        <span class="muted">Ask follow-up questions about this workbook:</span>
+        <button type="button" class="chip-btn" onclick="askCoachPreset('Why is our health score low and what are the top 3 fixes?')">Top 3 Fixes</button>
+        <button type="button" class="chip-btn" onclick="askCoachPreset('Rewrite our slowest calculated fields using Tableau best practices.')">Rewrite Slow Calcs</button>
+        <button type="button" class="chip-btn" onclick="askCoachPreset('Review color palette, font consistency, and WCAG accessibility risks.')">WCAG &amp; UX Review</button>
+        <button type="button" class="chip-btn" onclick="askCoachPreset('Summarize the business KPIs and data lineage for stakeholders.')">Executive Summary</button>
+      </div>
+      <div id="chatBox" class="chat-box">
+        <div class="muted">Load a workbook and ask anything about performance, formulas, WCAG design, or KPI definitions.</div>
+      </div>
+      <div class="row">
+        <input id="chatInput" type="text" placeholder="Ask the Tableau Coach (Enter to send)..." style="flex:1;" onkeydown="if(event.key==='Enter'){sendCoachMessage();}" />
+        <button id="chatSendBtn" type="button" class="primary" onclick="sendCoachMessage()">Send</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- API Key Modal -->
+<div id="keyModalBackdrop" class="modal-backdrop hidden" onclick="if(event.target===this) closeKeyModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="keyModalTitle">
+    <h2 id="keyModalTitle" style="margin-top:0;">Configure Gemini API Key</h2>
+    <p class="muted">
+      Used by the Google Antigravity SDK for Gemini AI documentation, deep performance evaluation, and Coach Chat.
+      Generate a key at <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">Google AI Studio</a>.
+    </p>
+    <div class="field">
+      <label for="modalApiKey">GEMINI_API_KEY</label>
+      <input id="modalApiKey" type="password" placeholder="AIza..." autocomplete="off" />
+    </div>
+    <label style="display:flex;align-items:center;gap:6px;margin-bottom:14px;cursor:pointer;">
+      <input id="persistKeyCheck" type="checkbox" /> Also persist to local <code>.env</code> file
+    </label>
+    <div id="modalKeyFeedback" class="hidden"></div>
+    <div class="row" style="justify-content: space-between;">
+      <button type="button" onclick="clearSavedKey()">Clear Key</button>
+      <div class="row">
+        <button type="button" onclick="closeKeyModal()">Cancel</button>
+        <button type="button" class="primary" onclick="saveKeyFromModal()">Save Key</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = {
+    snapshotId: null,
+    snapshot: null,
+    audit: null,
+    bundle: null,
+    aiEvaluation: null,
+    aiTelemetry: null,
+    previewMarkdown: '',
+    jobMarkdown: null,
+    activeJobId: null,
+    eventSource: null,
+    credStatus: null,
+    samples: [],
+    sevFilter: 'all',
+    catFilter: 'all',
+    chatHistory: [],
+  };
+
+  function escHtml(val) {
+    return String(val ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('tableau-doc-theme', next); } catch (e) {}
+  }
+
+  async function initApp() {
+    try {
+      const saved = localStorage.getItem('tableau-doc-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch (e) {}
+    setupDragAndDrop();
+
+    try {
+      const res = await fetch('/api/health');
+      const data = await res.json();
+      state.credStatus = data.credentials || {};
+      state.samples = data.samples || [];
+      renderCredentialPill();
+      populateSamples();
+    } catch (err) {
+      document.getElementById('credPill').textContent = 'Server error';
+    }
+  }
+
+  function populateSamples() {
+    const sel = document.getElementById('sampleSelect');
+    const showcaseRow = document.getElementById('showcaseRow');
+    sel.innerHTML = '';
+    showcaseRow.innerHTML = '';
+
+    if (!state.samples.length) {
+      sel.innerHTML = '<option value="">No bundled sample files found</option>';
+      return;
+    }
+
+    const showcase = state.samples.filter((s) => s.group === 'Showcase' || s.name === 'geocoding.twbx');
+    showcase.slice(0, 4).forEach((s) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip-btn';
+      btn.textContent = s.name;
+      btn.onclick = () => loadSamplePath(s.path);
+      showcaseRow.appendChild(btn);
+    });
+
+    state.samples.forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s.path;
+      opt.textContent = `[${s.group || 'Sample'}] ${s.name} (${s.path})`;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderCredentialPill() {
+    const pill = document.getElementById('credPill');
+    const guide = document.getElementById('credGuide');
+    const backend = document.getElementById('backendSelect').value;
+    const inlineKey = document.getElementById('apiKeyInput').value.trim();
+
+    if (backend === 'gemini') {
+      if (state.credStatus?.configured || inlineKey) {
+        pill.className = 'pill pill-ok';
+        const masked = state.credStatus?.masked_api_key ? ` (${state.credStatus.masked_api_key})` : '';
+        pill.textContent = `Gemini Ready${masked}`;
+        guide.classList.add('hidden');
+      } else {
+        pill.className = 'pill pill-warn';
+        pill.textContent = 'Gemini API Key Missing';
+        guide.classList.remove('hidden');
+      }
+    } else {
+      pill.className = 'pill pill-accent';
+      pill.textContent = `Backend: ${backend.toUpperCase()}`;
+      guide.classList.add('hidden');
+    }
+  }
+
+  function updateBackendFields() {
+    const b = document.getElementById('backendSelect').value;
+    document.getElementById('apiKeyField').classList.toggle('hidden', b !== 'gemini');
+    document.getElementById('vertexProjectField').classList.toggle('hidden', b !== 'vertex');
+    document.getElementById('ollamaUrlField').classList.toggle('hidden', b !== 'ollama');
+    document.getElementById('litertPathField').classList.toggle('hidden', b !== 'litert');
+    renderCredentialPill();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('apiKeyInput')?.addEventListener('input', renderCredentialPill);
+  });
+
+  function openKeyModal() {
+    document.getElementById('modalKeyFeedback').classList.add('hidden');
+    document.getElementById('keyModalBackdrop').classList.remove('hidden');
+  }
+  function closeKeyModal() {
+    document.getElementById('keyModalBackdrop').classList.add('hidden');
+  }
+
+  async function saveKeyFromModal() {
+    const key = document.getElementById('modalApiKey').value.trim();
+    const persist = document.getElementById('persistKeyCheck').checked;
+    const fb = document.getElementById('modalKeyFeedback');
+    if (!key) {
+      fb.className = 'alert alert-err';
+      fb.textContent = 'Please paste a non-empty Gemini API key.';
+      fb.classList.remove('hidden');
+      return;
+    }
+    const res = await fetch('/api/config/api-key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: key, persist_to_env: persist }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      fb.className = 'alert alert-err';
+      fb.textContent = data.detail || 'Failed to save key.';
+      fb.classList.remove('hidden');
+      return;
+    }
+    state.credStatus = data;
+    document.getElementById('modalApiKey').value = '';
+    renderCredentialPill();
+    closeKeyModal();
+  }
+
+  async function clearSavedKey() {
+    const res = await fetch('/api/config/api-key?remove_from_env=false', { method: 'DELETE' });
+    state.credStatus = await res.json();
+    document.getElementById('apiKeyInput').value = '';
+    renderCredentialPill();
+    closeKeyModal();
+  }
+
+  function setupDragAndDrop() {
+    const dz = document.getElementById('dropzone');
+    ['dragenter', 'dragover'].forEach((evt) => {
+      dz.addEventListener(evt, (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach((evt) => {
+      dz.addEventListener(evt, (e) => { e.preventDefault(); dz.classList.remove('dragover'); });
+    });
+    dz.addEventListener('drop', (e) => {
+      const f = e.dataTransfer?.files?.[0];
+      if (f) handleFileSelect(f);
+    });
+  }
+
+  function showInspectAlert(msg, type = 'err') {
+    const box = document.getElementById('inspectAlert');
+    box.className = `alert alert-${type}`;
+    box.textContent = msg;
+    box.classList.remove('hidden');
+  }
+
+  async function handleFileSelect(file) {
+    if (!file) return;
+    document.getElementById('selectedFileLabel').textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    const fd = new FormData();
+    fd.append('file', file);
+    await runInspect(fd, file.name);
+  }
+
+  async function loadSampleWorkbook() {
+    const path = document.getElementById('sampleSelect').value;
+    if (!path) return;
+    await loadSamplePath(path);
+  }
+
+  async function loadSamplePath(path) {
+    document.getElementById('selectedFileLabel').textContent = `Sample: ${path}`;
+    const fd = new FormData();
+    fd.append('sample_path', path);
+    await runInspect(fd, path);
+  }
+
+  async function runInspect(formData, label) {
+    showInspectAlert(`Parsing and auditing ${label}...`, 'ok');
+    try {
+      const res = await fetch('/api/inspect', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        showInspectAlert(typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail), 'err');
+        return;
+      }
+      state.snapshotId = data.snapshot_id;
+      state.snapshot = data.snapshot;
+      state.audit = data.audit;
+      state.previewMarkdown = data.preview_markdown || '';
+      state.bundle = null;
+      state.aiEvaluation = null;
+      state.jobMarkdown = null;
+      state.chatHistory = [];
+      state.sevFilter = 'all';
+      state.catFilter = 'all';
+      onWorkbookLoaded();
+      showInspectAlert(`Loaded & audited "${label}" — Score ${state.audit.overall_score}/100 (Grade ${state.audit.grade}).`, 'ok');
+    } catch (err) {
+      showInspectAlert(`Inspect failed: ${err}`, 'err');
+    }
+  }
+
+  function onWorkbookLoaded() {
+    const snap = state.snapshot;
+    const audit = state.audit;
+    document.getElementById('summarySection').classList.remove('hidden');
+    document.getElementById('workspaceSection').classList.remove('hidden');
+
+    ['generateBtn', 'auditBtn', 'expMdBtn', 'expHtmlBtn', 'expJsonBtn'].forEach((id) => {
+      document.getElementById(id).disabled = false;
+    });
+
+    document.getElementById('wbTitle').textContent = snap.workbook_name || snap.filename;
+    document.getElementById('wbMeta').textContent = `${snap.filename} • Tableau ${snap.tableau_version || 'Unknown'}`;
+
+    const perfBadge = document.getElementById('perfRecBadge');
+    if (audit?.performance_recording?.detected) {
+      perfBadge.className = 'pill pill-warn';
+      perfBadge.textContent = `Perf Recording: ${(audit.performance_recording.events || []).length} event groups`;
+      perfBadge.classList.remove('hidden');
+    } else {
+      perfBadge.classList.add('hidden');
+    }
+
+    const ring = document.getElementById('scoreRing');
+    const grade = audit?.grade || '-';
+    ring.className = `score-ring grade-${grade}`;
+    document.getElementById('scoreVal').textContent = audit ? `${audit.overall_score}` : '--';
+    document.getElementById('gradeVal').textContent = `Grade ${grade}`;
+
+    const scoreToGrade = (s) => (s >= 90 ? 'A' : s >= 78 ? 'B' : s >= 65 ? 'C' : s >= 50 ? 'D' : 'F');
+    const catGrid = document.getElementById('categoryGrid');
+    catGrid.innerHTML = (audit?.category_scores || []).map((c) => `
+      <button type="button" class="cat-card" onclick="filterByCategory('${escHtml(c.category)}')">
+        <div class="cat-top">
+          <span>${escHtml(c.label)}</span>
+          <span>${c.score}/100 (${scoreToGrade(c.score)})</span>
+        </div>
+        <div class="cat-bar"><span style="width:${c.score}%"></span></div>
+        <div class="muted" style="font-size:0.74rem;">Issues:${c.issue_count} • Crit:${c.critical_count} • High:${c.high_count}</div>
+      </button>
+    `).join('');
+
+    const dsReal = (snap.datasources || []).filter((d) => !d.is_parameters);
+    const calcTotal = dsReal.reduce((acc, d) => acc + (d.calculated_fields || []).length, 0);
+    const findingsCount = (audit?.findings || []).length;
+    document.getElementById('findingCountTab').textContent = findingsCount;
+
+    document.getElementById('statsBar').innerHTML = [
+      ['Dashboards', (snap.dashboards || []).length],
+      ['Worksheets', (snap.worksheets || []).length],
+      ['Data Sources', dsReal.length],
+      ['Calculations', calcTotal],
+      ['Parameters', (snap.parameters || []).length],
+      ['Actions', (snap.actions || []).length],
+      ['Thumbnails', (snap.thumbnails || []).length],
+      ['Audit Findings', findingsCount],
+    ].map(([lbl, val]) => `
+      <div class="stat-box"><span class="stat-val">${val}</span><span class="stat-lbl">${lbl}</span></div>
+    `).join('');
+
+    const scopeSel = document.getElementById('dashboardScope');
+    scopeSel.innerHTML = '<option value="">Entire Workbook (All Dashboards)</option>';
+    (snap.dashboards || []).forEach((d) => {
+      const opt = document.createElement('option');
+      opt.value = d.name;
+      opt.textContent = `Dashboard: ${d.name}`;
+      scopeSel.appendChild(opt);
+    });
+
+    renderFindings();
+    renderExplorer();
+    renderAiAuditPlaceholder();
+    renderAiReportPlaceholder();
+    document.getElementById('markdownSourcePre').textContent = state.previewMarkdown;
+    document.getElementById('chatBox').innerHTML = '<div class="muted">Coach ready! Ask anything about this workbook.</div>';
+    refreshHtmlPreview();
+    switchTab(findingsCount > 0 ? 'findings' : 'explorer');
+  }
+
+  function filterByCategory(cat) {
+    state.catFilter = cat;
+    switchTab('findings');
+    renderFindings();
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+    ['findings', 'explorer', 'aiAudit', 'aiReport', 'htmlPreview', 'markdownRaw', 'coach'].forEach((t) => {
+      document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabId);
+    });
+  }
+
+  function renderActiveFilters() {
+    renderFindings();
+    renderExplorer();
+  }
+
+  function renderFindings() {
+    const root = document.getElementById('tab-findings');
+    const findings = state.audit?.findings || [];
+    const q = (document.getElementById('workspaceSearch').value || '').trim().toLowerCase();
+    const cats = Array.from(new Set(findings.map((f) => f.category)));
+
+    const filtered = findings.filter((f) => {
+      if (state.sevFilter !== 'all' && f.severity !== state.sevFilter) return false;
+      if (state.catFilter !== 'all' && f.category !== state.catFilter) return false;
+      if (q) {
+        const hay = `${f.title} ${f.target} ${f.evidence} ${f.recommendation}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+
+    const sevButtons = ['all', 'critical', 'high', 'medium', 'low'].map((s) => {
+      const active = state.sevFilter === s ? 'active' : '';
+      return `<button type="button" class="chip-btn ${active}" onclick="state.sevFilter='${s}';renderFindings()">${s.toUpperCase()}</button>`;
+    }).join('');
+
+    const catOptions = [`<option value="all">All Categories</option>`]
+      .concat(cats.map((c) => `<option value="${escHtml(c)}" ${state.catFilter === c ? 'selected' : ''}>${escHtml(c)}</option>`))
+      .join('');
+
+    const cards = filtered.length
+      ? filtered.map((f) => {
+          const diff = (f.rewrite_before || f.rewrite_after) ? `
+            <div class="diff-grid">
+              ${f.rewrite_before ? `<div class="diff-before"><strong>Before</strong><pre><code>${escHtml(f.rewrite_before)}</code></pre></div>` : ''}
+              ${f.rewrite_after ? `<div class="diff-after"><strong>After</strong><pre><code>${escHtml(f.rewrite_after)}</code></pre></div>` : ''}
+            </div>` : '';
+          return `
+            <div class="finding-card sev-${escHtml(f.severity)}">
+              <div class="row" style="justify-content:space-between;">
+                <div>
+                  <span class="pill">${escHtml(f.severity.toUpperCase())}</span>
+                  <span class="pill pill-accent">${escHtml(f.category)}</span>
+                  <strong style="margin-left:4px;">${escHtml(f.title)}</strong>
+                </div>
+                <code>${escHtml(f.target)}</code>
+              </div>
+              ${f.evidence ? `<div style="margin-top:6px;"><strong>Evidence:</strong> ${escHtml(f.evidence)}</div>` : ''}
+              ${f.impact_summary ? `<div><strong>Impact:</strong> ${escHtml(f.impact_summary)}</div>` : ''}
+              ${f.recommendation ? `<div><strong>Fix:</strong> ${escHtml(f.recommendation)}</div>` : ''}
+              ${diff}
+              ${f.source_citation ? `<div class="muted" style="margin-top:6px;">Source: ${escHtml(f.source_citation)}</div>` : ''}
+            </div>
+          `;
+        }).join('')
+      : '<div class="alert alert-ok">No audit findings match the current filter.</div>';
+
+    root.innerHTML = `
+      <div class="row" style="justify-content:space-between;margin-bottom:10px;">
+        <div class="row">${sevButtons}</div>
+        <select style="max-width:220px;" onchange="state.catFilter=this.value;renderFindings()">${catOptions}</select>
+      </div>
+      ${cards}
+    `;
+  }
+
+  function appendLog(kind, text) {
+    const log = document.getElementById('agentLog');
+    const div = document.createElement('div');
+    div.className = `log-entry log-${kind}`;
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${kind.toUpperCase()}: ${text}`;
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function collectBackendPayload() {
+    return {
+      backend: document.getElementById('backendSelect').value,
+      api_key: document.getElementById('apiKeyInput').value.trim() || null,
+      model: document.getElementById('modelInput').value.trim() || null,
+      project: document.getElementById('projectInput').value.trim() || null,
+      base_url: document.getElementById('baseUrlInput').value.trim() || null,
+      litert_model_path: document.getElementById('litertPathInput').value.trim() || null,
+    };
+  }
+
+  async function startAiGeneration() {
+    if (!state.snapshotId) return;
+    const errBox = document.getElementById('agentErrorBox');
+    errBox.classList.add('hidden');
+    document.getElementById('agentSection').classList.remove('hidden');
+    document.getElementById('agentTitle').textContent = 'Antigravity SDK — AI Documentation Agent';
+    document.getElementById('agentLog').innerHTML = '';
+    const pill = document.getElementById('jobStatusPill');
+    pill.className = 'pill pill-accent';
+    pill.textContent = 'Generating Docs...';
+
+    const bp = collectBackendPayload();
+    const fd = new FormData();
+    fd.append('snapshot_id', state.snapshotId);
+    fd.append('target_dashboard', document.getElementById('dashboardScope').value);
+    fd.append('audience', document.getElementById('audienceInput').value);
+    fd.append('custom_instructions', document.getElementById('customInstructions').value);
+    fd.append('include_thumbnails', document.getElementById('includeThumbs').checked ? 'true' : 'false');
+    Object.entries(bp).forEach(([k, v]) => { if (v) fd.append(k, v); });
+
+    try {
+      const res = await fetch('/api/generate', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        const msg = data.detail?.message || JSON.stringify(data.detail || data);
+        errBox.textContent = msg;
+        errBox.classList.remove('hidden');
+        pill.className = 'pill pill-err';
+        pill.textContent = 'Configuration Needed';
+        return;
+      }
+      listenJobEvents(data.job_id);
+    } catch (err) {
+      errBox.textContent = `Request failed: ${err}`;
+      errBox.classList.remove('hidden');
+      pill.className = 'pill pill-err';
+      pill.textContent = 'Failed';
+    }
+  }
+
+  function listenJobEvents(jobId) {
+    if (state.eventSource) state.eventSource.close();
+    const es = new EventSource(`/api/jobs/${jobId}/events`);
+    state.eventSource = es;
+
+    es.addEventListener('status', (e) => appendLog('status', JSON.parse(e.data).message));
+    es.addEventListener('thought', (e) => appendLog('thought', JSON.parse(e.data).text));
+    es.addEventListener('tool_call', (e) => {
+      const d = JSON.parse(e.data);
+      appendLog('tool_call', `${d.name}(${JSON.stringify(d.args)})`);
+    });
+    es.addEventListener('tool_result', (e) => {
+      const d = JSON.parse(e.data);
+      appendLog('tool_result', `${d.name}: ${d.output_preview}`);
+    });
+    es.addEventListener('error', (e) => {
+      if (e.data) {
+        const d = JSON.parse(e.data);
+        appendLog('error', d.message || 'Unknown error');
+        const eb = document.getElementById('agentErrorBox');
+        eb.textContent = d.message || 'Agent job failed.';
+        eb.classList.remove('hidden');
+        document.getElementById('jobStatusPill').className = 'pill pill-err';
+        document.getElementById('jobStatusPill').textContent = 'Failed';
+      }
+      es.close();
+    });
+    es.addEventListener('complete', async () => {
+      es.close();
+      appendLog('complete', 'AI documentation complete.');
+      const res = await fetch(`/api/jobs/${jobId}`);
+      const data = await res.json();
+      state.bundle = data.bundle;
+      state.jobMarkdown = data.markdown || '';
+      document.getElementById('jobStatusPill').className = 'pill pill-ok';
+      document.getElementById('jobStatusPill').textContent = 'Docs Complete';
+      document.getElementById('markdownSourcePre').textContent = state.jobMarkdown;
+      renderAiReport();
+      refreshHtmlPreview();
+      switchTab('aiReport');
+    });
+  }
+
+  async function startAiAudit() {
+    if (!state.snapshotId) return;
+    const errBox = document.getElementById('agentErrorBox');
+    errBox.classList.add('hidden');
+    document.getElementById('agentSection').classList.remove('hidden');
+    document.getElementById('agentTitle').textContent = 'Antigravity SDK — Performance & UX Auditor';
+    document.getElementById('agentLog').innerHTML = '';
+    const pill = document.getElementById('jobStatusPill');
+    pill.className = 'pill pill-accent';
+    pill.textContent = 'Auditing...';
+
+    const payload = {
+      ...collectBackendPayload(),
+      deep_multi_agent: document.getElementById('deepMultiAgent').checked,
+      focus_notes: document.getElementById('customInstructions').value.trim(),
+    };
+
+    try {
+      const res = await fetch(`/api/audit/${state.snapshotId}/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const msg = data.detail?.message || data.detail || `HTTP ${res.status}`;
+        errBox.textContent = msg;
+        errBox.classList.remove('hidden');
+        pill.className = 'pill pill-err';
+        pill.textContent = 'Configuration Needed';
+        return;
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const frames = buffer.split('\n\n');
+        buffer = frames.pop() || '';
+        for (const frame of frames) {
+          const dataLine = frame.split('\n').find((l) => l.startsWith('data: '));
+          if (!dataLine) continue;
+          const evt = JSON.parse(dataLine.slice(6));
+          if (evt.type === 'status') appendLog('status', evt.message);
+          else if (evt.type === 'tool_start') appendLog('tool_start', `${evt.tool}(${JSON.stringify(evt.args || {})})`);
+          else if (evt.type === 'tool_end') appendLog('tool_end', `${evt.tool} (${evt.elapsed_ms ?? 0} ms)`);
+          else if (evt.type === 'error') {
+            appendLog('error', evt.message);
+            errBox.textContent = evt.message;
+            errBox.classList.remove('hidden');
+            pill.className = 'pill pill-err';
+            pill.textContent = 'Failed';
+          } else if (evt.type === 'complete') {
+            state.aiEvaluation = evt.evaluation;
+            state.aiTelemetry = evt.telemetry;
+            appendLog('complete', `Audit complete (${evt.telemetry?.used_multi_agent ? 'Multi-Agent' : 'Single-Agent'}).`);
+            pill.className = 'pill pill-ok';
+            pill.textContent = 'Audit Complete';
+            renderAiAudit();
+            refreshHtmlPreview();
+            refreshMarkdownPreview();
+            switchTab('aiAudit');
+          }
+        }
+      }
+    } catch (err) {
+      errBox.textContent = `Audit stream error: ${err}`;
+      errBox.classList.remove('hidden');
+      pill.className = 'pill pill-err';
+      pill.textContent = 'Failed';
+    }
+  }
+
+  function renderAiAuditPlaceholder() {
+    document.getElementById('tab-aiAudit').innerHTML = `
+      <div class="subcard">
+        <h3>AI Performance, Formula Rewrite &amp; WCAG Playbook</h3>
+        <p class="muted">Click <strong>Run AI Perf &amp; UX Audit</strong> above to run the Antigravity evaluator agent (grounded in curated Tableau &amp; InterWorks whitepapers) and produce Before/After DAX/Tableau rewrites, WCAG fixes, and a Prioritized Quick-Wins vs Strategic Refactor plan.</p>
+      </div>`;
+  }
+
+  function renderAiAudit() {
+    const ev = state.aiEvaluation;
+    if (!ev) { renderAiAuditPlaceholder(); return; }
+    const rewrites = (ev.calculation_rewrites || []).map((r) => `
+      <div class="subcard">
+        <div class="row" style="justify-content:space-between;">
+          <h3><code>${escHtml(r.field_name)}</code> <span class="muted">(${escHtml(r.datasource)})</span></h3>
+          <span class="pill pill-accent">${escHtml(r.expected_impact)} Impact</span>
+        </div>
+        <p>${escHtml(r.why_it_is_faster)}</p>
+        <div class="diff-grid">
+          <div class="diff-before"><strong>Before</strong><pre><code>${escHtml(r.current_formula)}</code></pre></div>
+          <div class="diff-after"><strong>After</strong><pre><code>${escHtml(r.optimized_formula)}</code></pre></div>
+        </div>
+      </div>`).join('') || '<p class="muted">No calculation rewrites flagged.</p>';
+
+    const uxTips = (ev.formatting_and_ux_tips || []).map((t) => `
+      <div class="subcard"><span class="pill pill-accent">${escHtml(t.area)}</span> <strong>${escHtml(t.target)}:</strong> ${escHtml(t.observation)}<div><strong>Fix:</strong> ${escHtml(t.recommendation)}</div><div class="muted">Benefit: ${escHtml(t.benefit)}</div></div>`).join('');
+
+    const archTips = [...(ev.data_and_filter_tips || []), ...(ev.dashboard_and_server_tips || [])].map((t) => `
+      <div class="subcard"><span class="pill pill-accent">${escHtml(t.priority)}</span> <strong>${escHtml(t.target)}</strong> — ${escHtml(t.issue)}<div><strong>Action:</strong> ${escHtml(t.action)}</div><div class="muted">Principle: ${escHtml(t.reference_principle)}</div></div>`).join('');
+
+    document.getElementById('tab-aiAudit').innerHTML = `
+      <div class="subcard">
+        <div class="row" style="justify-content:space-between;">
+          <h3>Executive Performance Summary</h3>
+          <span class="pill pill-accent">Est. Grade: ${escHtml(ev.estimated_performance_grade)}</span>
+        </div>
+        <p>${escHtml(ev.executive_summary)}</p>
+        ${ev.top_bottlenecks?.length ? `<strong>Top Bottlenecks:</strong><ul>${ev.top_bottlenecks.map((b) => `<li>${escHtml(b)}</li>`).join('')}</ul>` : ''}
+      </div>
+      <h3>Calculation Rewrites</h3>${rewrites}
+      ${uxTips ? `<h3>Formatting &amp; WCAG UX Improvements</h3>${uxTips}` : ''}
+      ${archTips ? `<h3>Data, Filter, Dashboard &amp; Server Architecture</h3>${archTips}` : ''}
+      <div class="grid-two">
+        <div class="subcard"><h3>Quick Wins (&lt;15 min)</h3><ul>${(ev.quick_wins_checklist || []).map((q) => `<li>${escHtml(q)}</li>`).join('')}</ul></div>
+        <div class="subcard"><h3>Strategic Refactors</h3><ul>${(ev.strategic_refactors || []).map((s) => `<li>${escHtml(s)}</li>`).join('')}</ul></div>
+      </div>`;
+  }
+
+  function renderAiReportPlaceholder() {
+    document.getElementById('tab-aiReport').innerHTML = `
+      <div class="subcard">
+        <h3>AI Documentation Report</h3>
+        <p class="muted">Click <strong>Generate AI Docs</strong> above to inspect calculations, dashboards, zone wireframes, and thumbnails with the Antigravity SDK and produce stakeholder-ready documentation.</p>
+      </div>`;
+  }
+
+  function renderAiReport() {
+    const ai = state.bundle?.ai_report;
+    if (!ai) { renderAiReportPlaceholder(); return; }
+    const kpiRows = (ai.kpi_glossary || []).map((k) => `
+      <tr>
+        <td><strong>${escHtml(k.name)}</strong></td>
+        <td>${escHtml(k.business_definition)}</td>
+        <td><code>${escHtml(k.formula_or_aggregation)}</code></td>
+        <td>${escHtml(k.datasource_and_worksheets)}</td>
+      </tr>`).join('');
+    const dashHtml = (ai.dashboards || []).map((d) => `
+      <div class="subcard">
+        <h3>${escHtml(d.name)}</h3>
+        <p>${escHtml(d.purpose)}</p>
+        ${d.visual_layout_summary ? `<div class="alert alert-ok"><strong>Visual Layout &amp; Vision:</strong> ${escHtml(d.visual_layout_summary)}</div>` : ''}
+        <div class="muted"><strong>Controls:</strong> ${escHtml(d.controls_and_filters)}</div>
+        <div class="muted"><strong>Interactivity:</strong> ${escHtml(d.interactivity_narrative)}</div>
+        ${(d.key_caveats || []).length ? `<ul>${d.key_caveats.map((c) => `<li>${escHtml(c)}</li>`).join('')}</ul>` : ''}
+      </div>`).join('');
+    const calcDocs = (ai.calculated_fields_explained || []).map((c) => `
+      <tr>
+        <td><strong>${escHtml(c.name)}</strong><div class="muted">${escHtml(c.datasource)}</div></td>
+        <td><code>${escHtml(c.formula)}</code></td>
+        <td>${escHtml(c.plain_english_explanation)}<div class="muted">${escHtml(c.dependencies_and_usage)}</div></td>
+      </tr>`).join('');
+    document.getElementById('tab-aiReport').innerHTML = `
+      <div class="subcard">
+        <h3>${escHtml(ai.workbook_title || 'Executive Overview')}</h3>
+        <p>${escHtml(ai.executive_summary)}</p>
+        ${(ai.target_audience || []).length ? `<div class="muted"><strong>Audience:</strong> ${escHtml(ai.target_audience.join(', '))}</div>` : ''}
+      </div>
+      ${kpiRows ? `<div class="subcard"><h3>KPI Glossary</h3><div class="table-wrap"><table><thead><tr><th>KPI</th><th>Definition</th><th>Formula / Agg</th><th>Scope</th></tr></thead><tbody>${kpiRows}</tbody></table></div></div>` : ''}
+      ${dashHtml}
+      ${calcDocs ? `<div class="subcard"><h3>Calculated Fields Explained</h3><div class="table-wrap"><table><thead><tr><th>Field</th><th>Formula</th><th>Explanation &amp; Usage</th></tr></thead><tbody>${calcDocs}</tbody></table></div></div>` : ''}
+      ${ai.mermaid_lineage_diagram ? `<div class="subcard"><h3>Mermaid Data Lineage</h3><pre class="code-block">${escHtml(ai.mermaid_lineage_diagram)}</pre></div>` : ''}`;
+  }
+
+  function renderExplorer() {
+    const snap = state.snapshot;
+    if (!snap) return;
+    const q = (document.getElementById('workspaceSearch').value || '').trim().toLowerCase();
+    const match = (txt) => !q || String(txt || '').toLowerCase().includes(q);
+    const parts = [];
+
+    if ((snap.thumbnails || []).length) {
+      const imgs = snap.thumbnails.map((t) => `
+        <div class="thumb-card">
+          <img src="data:image/png;base64,${t.base64_png}" alt="${escHtml(t.name)}" />
+          <div class="thumb-cap"><strong>${escHtml(t.name)}</strong><span class="muted">${t.width || '?'}x${t.height || '?'}</span></div>
+        </div>`).join('');
+      parts.push(`<h3>Dashboard &amp; Sheet Thumbnails</h3><div class="thumb-grid">${imgs}</div>`);
+    }
+
+    (snap.dashboards || []).filter((d) => match(d.name)).forEach((d) => {
+      const dw = d.max_width || d.min_width;
+      const dh = d.max_height || d.min_height;
+      const zonesHtml = (d.zones || []).filter((z) => z.w > 0 && z.h > 0).map((z) => {
+        const left = (z.x / 1000).toFixed(2);
+        const top = (z.y / 1000).toFixed(2);
+        const w = (z.w / 1000).toFixed(2);
+        const h = (z.h / 1000).toFixed(2);
+        return `<div class="wf-zone" style="left:${left}%;top:${top}%;width:${w}%;height:${h}%;" title="${escHtml(z.name || z.param_readable || '')}"><strong>${escHtml(z.zone_type)}</strong> ${escHtml(z.name || z.param_readable || '')}</div>`;
+      }).join('');
+      parts.push(`
+        <div class="subcard">
+          <h3>Dashboard: ${escHtml(d.name)}</h3>
+          <div class="muted">Size: ${dw || '?'}x${dh || '?'} px | Sheets: ${escHtml((d.worksheets || []).join(', '))}</div>
+          ${zonesHtml ? `<div class="wireframe-box" style="aspect-ratio:${(dw && dh) ? `${dw}/${dh}` : '16/10'}">${zonesHtml}</div>` : ''}
+        </div>`);
+    });
+
+    const calcs = [];
+    (snap.datasources || []).filter((ds) => !ds.is_parameters).forEach((ds) => {
+      (ds.calculated_fields || []).forEach((c) => {
+        const formula = c.readable_calculation || c.calculation || '';
+        if (match(c.caption || c.name) || match(formula)) {
+          calcs.push(`<tr><td>${escHtml(ds.caption || ds.name)}</td><td><strong>${escHtml(c.caption || c.name)}</strong></td><td>${escHtml(c.datatype)}</td><td><code>${escHtml(formula)}</code></td></tr>`);
+        }
+      });
+    });
+    if (calcs.length) {
+      parts.push(`<div class="subcard"><h3>Calculated Fields (${calcs.length})</h3><div class="table-wrap"><table><thead><tr><th>Datasource</th><th>Field</th><th>Type</th><th>Formula</th></tr></thead><tbody>${calcs.join('')}</tbody></table></div></div>`);
+    }
+
+    document.getElementById('tab-explorer').innerHTML = parts.join('') || '<p class="muted">No items match your search filter.</p>';
+  }
+
+  async function refreshHtmlPreview() {
+    if (!state.snapshotId) return;
+    try {
+      const res = await fetch(`/api/sessions/${state.snapshotId}/export/html?include_audit=true`);
+      if (res.ok) {
+        document.getElementById('htmlIframe').srcdoc = await res.text();
+      }
+    } catch (e) {}
+  }
+
+  async function refreshMarkdownPreview() {
+    if (!state.snapshotId) return;
+    try {
+      const res = await fetch(`/api/sessions/${state.snapshotId}/export/md?include_audit=true`);
+      if (res.ok) {
+        document.getElementById('markdownSourcePre').textContent = await res.text();
+      }
+    } catch (e) {}
+  }
+
+  function downloadSessionExport(fmt) {
+    if (!state.snapshotId) return;
+    window.location.href = `/api/sessions/${state.snapshotId}/export/${fmt}?include_audit=true`;
+  }
+
+  async function copyMarkdown() {
+    const md = document.getElementById('markdownSourcePre').textContent;
+    if (!md) return;
+    try {
+      await navigator.clipboard.writeText(md);
+    } catch (e) {}
+  }
+
+  function askCoachPreset(text) {
+    document.getElementById('chatInput').value = text;
+    sendCoachMessage();
+  }
+
+  async function sendCoachMessage() {
+    if (!state.snapshotId) return;
+    const inp = document.getElementById('chatInput');
+    const msg = inp.value.trim();
+    if (!msg) return;
+
+    const box = document.getElementById('chatBox');
+    if (state.chatHistory.length === 0) box.innerHTML = '';
+    box.insertAdjacentHTML('beforeend', `<div class="chat-msg chat-user">${escHtml(msg)}</div>`);
+    inp.value = '';
+    const sendBtn = document.getElementById('chatSendBtn');
+    sendBtn.disabled = true;
+
+    try {
+      const res = await fetch(`/api/chat/${state.snapshotId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...collectBackendPayload(), message: msg }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        const errTxt = data.detail?.message || data.detail || `HTTP ${res.status}`;
+        box.insertAdjacentHTML('beforeend', `<div class="alert alert-err">${escHtml(errTxt)}</div>`);
+      } else {
+        state.chatHistory.push({ role: 'user', content: msg }, { role: 'assistant', content: data.reply });
+        box.insertAdjacentHTML('beforeend', `<div class="chat-msg chat-assistant">${escHtml(data.reply)}</div>`);
+      }
+      box.scrollTop = box.scrollHeight;
+    } catch (err) {
+      box.insertAdjacentHTML('beforeend', `<div class="alert alert-err">Chat error: ${escHtml(err)}</div>`);
+    } finally {
+      sendBtn.disabled = false;
+    }
+  }
+
+  initApp();
+</script>
+</body>
+</html>

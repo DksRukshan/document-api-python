@@ -1,0 +1,12 @@
+google-antigravity
+fastapi
+uvicorn
+python-multipart
+pydantic>=2.0
+python-dotenv
+lxml
+setuptools
+packaging
+markdown
+pytest
+httpx

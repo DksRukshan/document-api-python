@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau Performance & UX Auditor — Google Antigravity SDK</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">T</div>
+        <div>
+          <h1>Tableau Performance &amp; UX Auditor</h1>
+          <p class="subtitle">Static XML Telemetry + Google Antigravity SDK Agent</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <span id="activeWorkbookBadge" class="pill hidden">No workbook loaded</span>
+        <button id="apiKeyStatusBtn" class="key-status-btn" type="button">
+          <span class="status-dot" id="apiKeyDot"></span>
+          <span id="apiKeyStatusText">Checking Gemini Key...</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Upload & Sample Selector -->
+    <section class="launcher-card">
+      <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Upload Tableau workbook .twb or .twbx">
+        <input type="file" id="fileInput" accept=".twb,.twbx" hidden />
+        <div class="drop-icon">⇪</div>
+        <div>
+          <strong>Drop a Tableau Workbook (<code>.twb</code> or <code>.twbx</code>)</strong>
+          <p class="muted">Inspects calculations, data sources, filters, formatting hierarchy, tooltips, layout nesting, and accessibility locally first.</p>
+        </div>
+        <button id="browseBtn" class="btn btn-secondary" type="button">Choose File</button>
+      </div>
+
+      <div class="samples-bar">
+        <span class="samples-label">Quick Demo Workbooks:</span>
+        <div id="samplesList" class="samples-buttons"></div>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <section id="emptyState" class="empty-state">
+      <h2>Ready to Audit Your Tableau Workbook</h2>
+      <p>
+        Upload a <code>.twb</code> / <code>.twbx</code> file above or load one of the built-in sample workbooks to inspect
+        deterministic telemetry and launch the <strong>Google Antigravity SDK</strong> optimizer.
+      </p>
+      <div class="pillars-grid">
+        <div class="pillar">
+          <h3>Calculation Optimizer</h3>
+          <p>Detects <code>ELSE IF</code>, <code>ATTR()</code>, <code>COUNTD()</code>, <code>NOW()</code>, chained <code>OR</code>s, nested calc re-calls, and suggests exact drop-in formula rewrites.</p>
+        </div>
+        <div class="pillar">
+          <h3>Formatting &amp; UX Critic</h3>
+          <p>Audits Workbook vs. Sheet styling overrides, typography, clutter (gridlines/borders), custom KPI number format arrows, tooltips, and WCAG 2.2 AA contrast.</p>
+        </div>
+        <div class="pillar">
+          <h3>Data, Filters &amp; Layout</h3>
+          <p>Flags Custom SQL, live Excel/CSV single-threading, Blending, <code>Only Relevant Values</code> cascades, Order of Operations bugs, Automatic sizing, and container nesting.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loaded Workbook Workspace -->
+    <section id="workspace" class="workspace hidden">
+      <!-- Score & Telemetry Strip -->
+      <div class="overview-grid">
+        <div class="score-card">
+          <div class="score-header">
+            <span class="muted">Health Score</span>
+            <span id="gradeBadge" class="grade-badge">A</span>
+          </div>
+          <div class="score-value-row">
+            <span id="overallScore" class="score-number">100</span>
+            <span class="score-denom">/ 100</span>
+          </div>
+          <p id="workbookMetaLine" class="muted small"></p>
+        </div>
+
+        <div class="stats-grid" id="summaryStatsGrid"></div>
+      </div>
+
+      <!-- Category Breakdown -->
+      <div class="category-bars" id="categoryScoresGrid"></div>
+
+      <!-- Antigravity SDK Evaluation Control Strip -->
+      <div class="agent-bar">
+        <div class="agent-bar-left">
+          <div class="agent-title-row">
+            <span class="sdk-chip">Google Antigravity SDK</span>
+            <strong>AI Deep Audit &amp; Custom Rewrites</strong>
+          </div>
+          <p class="muted small">
+            Runs an autonomous Antigravity <code>Agent</code> equipped with workbook inspection tools, InterWorks 2021 + Tableau Docs skills, safety policies, and live observability hooks.
+          </p>
+          <div class="agent-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="deepMultiAgentToggle" />
+              <span>Deep Multi-Agent Mode (<code>calculation_optimizer</code> + <code>formatting_ux_critic</code> subagents)</span>
+            </label>
+            <input
+              type="text"
+              id="focusNotesInput"
+              class="focus-input"
+              placeholder="Optional focus (e.g., speed up initial load &amp; simplify KPI formatting)..."
+            />
+          </div>
+        </div>
+        <div class="agent-bar-right">
+          <button id="runAgentBtn" class="btn btn-primary" type="button">
+            Run Antigravity Evaluation
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Trace Banner -->
+      <div id="liveTraceBox" class="live-trace hidden">
+        <div class="live-trace-header">
+          <strong id="liveTraceTitle">Antigravity Agent Running...</strong>
+          <span id="liveUsageBadge" class="muted small"></span>
+        </div>
+        <div id="liveTraceSteps" class="trace-steps"></div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="findings" role="tab">Findings &amp; Rewrites <span id="findingsCountChip" class="chip">0</span></button>
+        <button class="tab" data-tab="ai-report" role="tab">Antigravity AI Report</button>
+        <button class="tab" data-tab="calculations" role="tab">Calculations Explorer <span id="calcsCountChip" class="chip">0</span></button>
+        <button class="tab" data-tab="inventory" role="tab">Formatting, Layout &amp; Data</button>
+        <button class="tab" data-tab="coach" role="tab">Coach Chat</button>
+      </nav>
+
+      <!-- Tab 1: Findings -->
+      <div id="tab-findings" class="tab-panel active">
+        <div class="filter-toolbar">
+          <select id="severityFilter" aria-label="Filter by severity">
+            <option value="all">All Severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="info">Info</option>
+          </select>
+          <select id="categoryFilter" aria-label="Filter by category">
+            <option value="all">All Categories</option>
+            <option value="calculations">Calculations</option>
+            <option value="formatting">Formatting &amp; Visual UX</option>
+            <option value="data_source">Data Source &amp; Modeling</option>
+            <option value="filters">Filters &amp; Order of Operations</option>
+            <option value="layout_dashboard">Worksheets &amp; Layout</option>
+            <option value="accessibility">Accessibility (WCAG)</option>
+            <option value="server_publishing">Server &amp; Publishing</option>
+          </select>
+        </div>
+        <div id="findingsList" class="findings-list"></div>
+      </div>
+
+      <!-- Tab 2: Antigravity AI Report -->
+      <div id="tab-ai-report" class="tab-panel">
+        <div id="aiReportContainer" class="ai-report-empty">
+          <h3>No AI Report Generated Yet</h3>
+          <p class="muted">Click <strong>Run Antigravity Evaluation</strong> above to synthesize drop-in calculation rewrites, formatting/accessibility upgrades, and prioritized performance wins.</p>
+        </div>
+      </div>
+
+      <!-- Tab 3: Calculations Explorer -->
+      <div id="tab-calculations" class="tab-panel">
+        <div class="filter-toolbar">
+          <input type="text" id="calcSearchInput" class="search-input" placeholder="Search calculation name or formula..." />
+          <label class="checkbox-label">
+            <input type="checkbox" id="calcFlaggedOnlyToggle" />
+            <span>Show flagged / unused only</span>
+          </label>
+        </div>
+        <div id="calculationsTableWrap" class="table-wrap"></div>
+      </div>
+
+      <!-- Tab 4: Formatting, Layout & Data Inventory -->
+      <div id="tab-inventory" class="tab-panel">
+        <div id="inventoryContainer" class="inventory-stack"></div>
+      </div>
+
+      <!-- Tab 5: Interactive Antigravity Coach Chat -->
+      <div id="tab-coach" class="tab-panel">
+        <div class="coach-panel">
+          <div class="coach-prompts">
+            <span class="muted small">Suggested questions:</span>
+            <button class="prompt-chip" data-prompt="What are the top 3 changes to cut initial dashboard load time fastest?">Top 3 load-time wins</button>
+            <button class="prompt-chip" data-prompt="Rewrite all flagged calculations in this workbook for Hyper extract speed.">Rewrite flagged formulas</button>
+            <button class="prompt-chip" data-prompt="Give me concrete formatting, tooltip, and WCAG contrast improvements for these worksheets.">Formatting &amp; UX polish</button>
+          </div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <form id="chatForm" class="chat-form">
+            <textarea
+              id="chatInput"
+              rows="2"
+              placeholder="Ask the Antigravity Tableau Coach about a sheet, filter, formatting tip, or paste any Tableau calculation..."
+              required
+            ></textarea>
+            <button id="chatSendBtn" class="btn btn-primary" type="submit">Ask Coach</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- API Key Setup Modal -->
+  <div id="apiKeyModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">Configure Gemini API Key (Google Antigravity SDK)</h2>
+        <button id="closeModalBtn" class="icon-btn" type="button" aria-label="Close">✕</button>
+      </div>
+      <p class="muted">
+        Static workbook telemetry and rule checks run 100% locally. To run the autonomous <strong>Google Antigravity SDK</strong> AI optimizer and Coach chat, enter a Gemini API key from Google AI Studio:
+      </p>
+      <p class="key-link-box">
+        <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">
+          https://aistudio.google.com/app/api-keys ↗
+        </a>
+      </p>
+      <form id="apiKeyForm">
+        <label class="field-label" for="apiKeyInput">GEMINI_API_KEY</label>
+        <input id="apiKeyInput" type="password" class="text-input" placeholder="AIza..." autocomplete="off" required />
+        <label class="checkbox-label" style="margin-top: 10px;">
+          <input type="checkbox" id="persistKeyCheckbox" />
+          <span>Save to local <code>.env</code> file (gitignored)</span>
+        </label>
+        <div id="apiKeyFeedback" class="feedback-msg hidden"></div>
+        <div class="modal-actions">
+          <button id="clearKeyBtn" class="btn btn-danger-outline" type="button">Clear Key</button>
+          <button class="btn btn-primary" type="submit">Save API Key</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

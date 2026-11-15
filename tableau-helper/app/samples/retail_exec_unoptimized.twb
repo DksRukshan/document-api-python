@@ -1,0 +1,230 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2024.2.0 (20242.24.0613.1930)' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <preferences>
+    <preference name='ui.show-tabs' value='true' />
+  </preferences>
+  <style>
+    <style-rule element='all'>
+      <format attr='font-family' value='Tableau Book' />
+    </style-rule>
+  </style>
+  <datasources>
+    <datasource caption='Orders Live (Excel + Custom SQL)' inline='true' name='federated.orders_live' version='18.1'>
+      <connection class='federated'>
+        <named-connections>
+          <named-connection caption='OrdersWorkbook.xlsx' name='excel_conn'>
+            <connection class='excel-direct' filename='OrdersWorkbook.xlsx' />
+          </named-connection>
+        </named-connections>
+        <relation join='inner' type='join'>
+          <relation name='Custom SQL Query' type='text'>SELECT * FROM Orders WHERE Order_Year &gt;= 2018</relation>
+          <relation name='Returns$' table='[Returns$]' type='table' />
+        </relation>
+      </connection>
+      <column caption='Region Bucket' datatype='string' name='[Calculation_RegionBucket]' role='dimension'>
+        <calculation class='tableau' formula='IF [Region] = &quot;West&quot; THEN &quot;Tier 1&quot; ELSE IF [Region] = &quot;East&quot; THEN &quot;Tier 2&quot; ELSE &quot;Other&quot; END END' />
+      </column>
+      <column caption='Priority Segments' datatype='boolean' name='[Calculation_PrioritySeg]' role='dimension'>
+        <calculation class='tableau' formula='IF [Segment] = &quot;Consumer&quot; OR [Segment] = &quot;Corporate&quot; OR [Segment] = &quot;Home Office&quot; OR [Segment] = &quot;Enterprise&quot; THEN TRUE ELSE FALSE END' />
+      </column>
+      <column caption='Unique Orders Status' datatype='real' name='[Calculation_UniqueOrders]' role='measure'>
+        <calculation class='tableau' formula='IF ATTR([Category]) = &quot;Technology&quot; THEN COUNTD([Order ID]) ELSE 0 END' />
+      </column>
+      <column caption='Live Timestamp Flag' datatype='string' name='[Calculation_LiveNow]' role='dimension'>
+        <calculation class='tableau' formula='IF [Order Date] &gt;= DATEADD(&quot;day&quot;, -30, NOW()) THEN &quot;Recent&quot; ELSE &quot;Older&quot; END' />
+      </column>
+      <column caption='SKU Parser' datatype='string' name='[Calculation_SkuParse]' role='dimension'>
+        <calculation class='tableau' formula='IF CONTAINS([Product ID], &quot;TEC&quot;) AND STARTSWITH([Product ID], &quot;OFF&quot;) = FALSE THEN LEFT([Product ID], FIND([Product ID], &quot;-&quot;) - 1) ELSE RIGHT([Product ID], LEN([Product ID]) - 1) END' />
+      </column>
+      <column caption='Margin Calc' datatype='real' name='[Calculation_Margin]' role='measure'>
+        <calculation class='tableau' formula='SUM([Profit]) / SUM([Sales])' />
+      </column>
+      <column caption='Margin Health Tier' datatype='string' name='[Calculation_MarginTier]' role='dimension'>
+        <calculation class='tableau' formula='IF [Calculation_Margin] &gt; 0.2 THEN &quot;Healthy&quot; ELSEIF [Calculation_Margin] &gt; 0.05 THEN &quot;Watch&quot; ELSE &quot;Critical&quot; END' />
+      </column>
+      <column caption='Metric Switcher' datatype='real' name='[Calculation_MetricSwitch]' role='measure'>
+        <calculation class='tableau' formula='SUM(IF [Metric Param] = &quot;Sales&quot; THEN [Sales] ELSE [Profit] END)' />
+      </column>
+      <column caption='YoY Arrow Indicator' datatype='string' name='[Calculation_Arrow]' role='dimension'>
+        <calculation class='tableau' formula='IF [Calculation_Margin] &gt; 0 THEN &quot;▲&quot; ELSE &quot;▼&quot; END' />
+      </column>
+      <column caption='Customer First Order Cohort' datatype='date' name='[Calculation_FirstOrderLOD]' role='dimension'>
+        <calculation class='tableau' formula='{ FIXED [Customer ID], [Sub-Category] : MIN([Order Date]) }' />
+      </column>
+      <column caption='Tier Score Chain' datatype='integer' name='[Calculation_TierChain]' role='measure'>
+        <calculation class='tableau' formula='IF [Calculation_MarginTier] = &quot;Healthy&quot; THEN 100 ELSE 50 END' />
+      </column>
+      <column caption='Executive Grade' datatype='string' name='[Calculation_ExecGrade]' role='dimension'>
+        <calculation class='tableau' formula='IF [Calculation_TierChain] &gt;= 80 THEN &quot;A&quot; ELSE &quot;B&quot; END' />
+      </column>
+      <column caption='Unused Legacy Calc' datatype='real' name='[Calculation_Unused]' role='measure'>
+        <calculation class='tableau' formula='[Sales] * 1.15' />
+      </column>
+      <column caption='Order ID' datatype='string' name='[Order ID]' role='dimension' />
+      <column caption='Order Date' datatype='date' name='[Order Date]' role='dimension' />
+      <column caption='Customer ID' datatype='string' name='[Customer ID]' role='dimension' />
+      <column caption='Region' datatype='string' name='[Region]' role='dimension' />
+      <column caption='Segment' datatype='string' name='[Segment]' role='dimension' />
+      <column caption='Category' datatype='string' name='[Category]' role='dimension' />
+      <column caption='Sub-Category' datatype='string' name='[Sub-Category]' role='dimension' />
+      <column caption='Product ID' datatype='string' name='[Product ID]' role='dimension' />
+      <column caption='Sales' datatype='real' name='[Sales]' role='measure' />
+      <column caption='Profit' datatype='real' name='[Profit]' role='measure' />
+    </datasource>
+    <datasource caption='Targets Blend Extract' inline='true' name='federated.targets_extract' version='18.1'>
+      <connection class='hyper' />
+      <extract enabled='true' />
+      <column datatype='string' name='[Region]' role='dimension' />
+      <column datatype='real' name='[Sales Target]' role='measure' />
+      <column datatype='string' name='[Attr1]' role='dimension' />
+      <column datatype='string' name='[Attr2]' role='dimension' />
+      <column datatype='string' name='[Attr3]' role='dimension' />
+      <column datatype='string' name='[Attr4]' role='dimension' />
+      <column datatype='string' name='[Attr5]' role='dimension' />
+      <column datatype='string' name='[Attr6]' role='dimension' />
+      <column datatype='string' name='[Attr7]' role='dimension' />
+      <column datatype='string' name='[Attr8]' role='dimension' />
+      <column datatype='string' name='[Attr9]' role='dimension' />
+      <column datatype='string' name='[Attr10]' role='dimension' />
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name='OVERVIEW KPI TABLE'>
+      <layout-options>
+        <title visible='true'>EXECUTIVE KPI SUMMARY TABLE</title>
+        <caption visible='false' />
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='Orders Live (Excel + Custom SQL)' name='federated.orders_live' />
+            <datasource caption='Targets Blend Extract' name='federated.targets_extract' />
+          </datasources>
+          <filter class='categorical' column='[federated.orders_live].[Region]' relevant-values='true' mode='checkdropdown' />
+          <filter class='categorical' column='[federated.orders_live].[MY(Order Date)]' level='MY' />
+          <filter class='categorical' column='[federated.orders_live].[Customer ID]'>
+            <groupfilter count='15' function='top' />
+          </filter>
+          <panes>
+            <pane>
+              <mark class='Text' />
+              <encodings>
+                <lod column='[federated.orders_live].[Calculation_UniqueOrders]' />
+                <text column='[federated.orders_live].[Calculation_ExecGrade]' />
+              </encodings>
+            </pane>
+          </panes>
+          <rows>[federated.orders_live].[Region] / [federated.orders_live].[Segment] / [federated.orders_live].[Customer ID] / [federated.orders_live].[Measure Names]</rows>
+          <cols>[federated.orders_live].[Category] / [federated.orders_live].[Sub-Category] / [federated.orders_live].[Measure Values]</cols>
+        </view>
+        <pages>[federated.orders_live].[Order Date]</pages>
+        <style>
+          <style-rule element='header'><format attr='font-family' value='Comic Sans MS' /></style-rule>
+          <style-rule element='gridline'><format attr='gridline-style' value='solid' /></style-rule>
+          <style-rule element='border'><format attr='border-style' value='solid' /></style-rule>
+          <style-rule element='band'><format attr='band-size' value='1' /></style-rule>
+          <style-rule element='cell'><format attr='font-size' value='10' /></style-rule>
+        </style>
+      </table>
+    </worksheet>
+    <worksheet name='GEO SALES POLYGONS'>
+      <layout-options>
+        <title visible='true'>REGIONAL POLYGON MAP</title>
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='Orders Live (Excel + Custom SQL)' name='federated.orders_live' />
+          </datasources>
+          <panes>
+            <pane><mark class='Polygon' /></pane>
+          </panes>
+          <rows>[federated.orders_live].[Calculation_RegionBucket]</rows>
+          <cols>[federated.orders_live].[Calculation_MetricSwitch]</cols>
+        </view>
+        <style>
+          <style-rule element='all'><format attr='font-family' value='Calibri' /></style-rule>
+        </style>
+      </table>
+    </worksheet>
+    <worksheet name='MARGIN COHORTS'>
+      <table>
+        <view>
+          <datasources><datasource name='federated.orders_live' /></datasources>
+          <panes><pane><mark class='Bar' /></pane></panes>
+          <rows>[federated.orders_live].[Calculation_FirstOrderLOD]</rows>
+          <cols>[federated.orders_live].[Calculation_MarginTier]</cols>
+        </view>
+      </table>
+    </worksheet>
+    <worksheet name='SKU TRENDS'>
+      <table>
+        <view>
+          <datasources><datasource name='federated.orders_live' /></datasources>
+          <panes><pane><mark class='Line' /></pane></panes>
+          <rows>[federated.orders_live].[Calculation_SkuParse]</rows>
+          <cols>[federated.orders_live].[Calculation_LiveNow]</cols>
+        </view>
+      </table>
+    </worksheet>
+    <worksheet name='SEGMENT MIX'>
+      <table>
+        <view>
+          <datasources><datasource name='federated.orders_live' /></datasources>
+          <panes><pane><mark class='Shape' /></pane></panes>
+          <rows>[federated.orders_live].[Calculation_PrioritySeg]</rows>
+          <cols>[federated.orders_live].[Calculation_Arrow]</cols>
+        </view>
+      </table>
+    </worksheet>
+    <worksheet name='DETAIL EXPORT'>
+      <table>
+        <view>
+          <datasources><datasource name='federated.orders_live' /></datasources>
+          <panes><pane><mark class='Text' /></pane></panes>
+          <rows>[federated.orders_live].[Order ID]</rows>
+          <cols>[federated.orders_live].[Sales]</cols>
+        </view>
+      </table>
+    </worksheet>
+  </worksheets>
+  <dashboards>
+    <dashboard name='Executive Monolith Dashboard'>
+      <size sizing-mode='automatic' />
+      <devicelayouts>
+        <devicelayout name='Phone' />
+        <devicelayout name='Tablet' />
+      </devicelayouts>
+      <zones>
+        <zone type-v2='layout-flow'>
+          <zone type-v2='layout-flow'>
+            <zone type-v2='layout-flow'>
+              <zone type-v2='layout-flow'>
+                <zone name='OVERVIEW KPI TABLE' />
+                <zone name='GEO SALES POLYGONS' />
+                <zone name='MARGIN COHORTS' />
+                <zone type-v2='empty' />
+                <zone type-v2='empty' />
+              </zone>
+              <zone name='SKU TRENDS' />
+              <zone name='SEGMENT MIX' />
+              <zone name='DETAIL EXPORT' />
+            </zone>
+            <zone type-v2='filter' param='Region' relevant-values='true' mode='checkdropdown' />
+            <zone type-v2='filter' param='Segment' relevant-values='true' mode='checkdropdown' />
+            <zone type-v2='filter' param='Category' mode='checklist' />
+            <zone type-v2='filter' param='Sub-Category' mode='checkdropdown' />
+            <zone type-v2='filter' param='Order Date' />
+            <zone type-v2='filter' param='Customer ID' mode='list' />
+          </zone>
+        </zone>
+      </zones>
+      <actions>
+        <action name='Filter Detail' on-exit='keep' />
+      </actions>
+    </dashboard>
+  </dashboards>
+  <windows>
+    <window class='dashboard' name='Executive Monolith Dashboard' tabs='true' />
+  </windows>
+</workbook>
